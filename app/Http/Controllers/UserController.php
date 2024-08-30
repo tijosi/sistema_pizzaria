@@ -20,9 +20,9 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user = User::select('id', 'name', 'email')->paginate('2');
+        $user = User::select('id', 'name', 'email')->paginate($request['paginate'] ?? 2);
 
         return [
             'status' => 200,
@@ -42,7 +42,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(UserCreateRequest $request)
+    public function store(Request $request)
     {
         $data = $request->all();
 
@@ -80,7 +80,25 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $data = $request->all();
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        }
+
+        $user->name     = $data['name'];
+        $user->email    = $data['email'];
+        $user->password = $data['password'];
+
+        $user->save();
+
+        return [
+            'status' => 200,
+            'menssagem' => 'Usuário atualizado com sucesso',
+            'user' => $user
+        ];
     }
 
     /**
@@ -88,6 +106,17 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        }
+
+        $user->delete();
+
+        return [
+            'status' => 200,
+            'menssagem' => 'Usuário deletado com sucesso!!',
+        ];
     }
 }
